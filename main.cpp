@@ -2,10 +2,20 @@
 
 using namespace std;
 
+class Point
+{
+public:
+	int x;
+	int y;
+}
+
 class Snake
 {
 public:
 	void move(int dir);
+
+	int length;
+	Point points[100];
 };
 
 void eraseScreen();
@@ -23,7 +33,7 @@ int main()
 	int screen[row][col];
 	eraseScreen();
 	makeEdge();
-	Snake s = new Snake();
+	Snake s;
 
 	char key;
 	while (gameOver()) {
