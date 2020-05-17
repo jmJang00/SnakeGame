@@ -21,9 +21,9 @@ class Snake
 {
 public:
 	Snake();
-    Snake(SnakeMap &m);
+	Snake(SnakeMap &m);
 	~Snake();
-    void makeSnake();
+	void makeSnake();
 	void move(int dir);
 	int findRoute(int key);
 	void passGate();
@@ -38,14 +38,14 @@ class SnakeMap
 {
 public:
 	SnakeMap();
-    SnakeMap(WINDOW *w, int row, int col);
+	SnakeMap(WINDOW *w, int row, int col);
 	~SnakeMap();
-    void eraseAll();
+	void eraseAll();
 	void makeEdge();
 	void makeGate();
 	void reflectResult();
 
-    int **map;
+	int **map;
 	int row;
 	int col;
 };
@@ -65,7 +65,7 @@ public:
 class ItemManager
 {
 public:
-    class Item {
+	class Item {
 		int kind;
 		int leftTurns;
 	};
