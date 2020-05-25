@@ -13,121 +13,120 @@
 class Point
 {
 public:
-	int x;
-	int y;
+    Point(int row, int col): row(row), col(col);
+    int row;
+    int col;
 };
 
 class Snake
 {
 public:
-	Snake();
-	Snake(SnakeMap &m);
-	~Snake();
-	void makeSnake();
-	void move(int dir);
-	int findRoute(int key);
-	void passGate();
+    Snake();
+    Snake(SnakeMap &m);
+    ~Snake();
 
-	int **map;
-	int length;
-	Point head;
-	vector<Point> body;
-};
+    void makeSnake();
+    void move(int dir);
+    int findRoute(int key);
+    void passGate();
 
-class SnakeMap
-{
-public:
-	SnakeMap();
-	SnakeMap(WINDOW *w, int row, int col);
-	~SnakeMap();
-	void eraseAll();
-	void makeEdge();
-	void makeGate();
-	void reflectResult();
-
-	int **map;
-	int row;
-	int col;
+    int length;
+    int prevKey;
+    Point head;
+    vector<Point> body;
 };
 
 class EventControl
 {
 public:
-   static bool hitsWall(SnakeMap &map);
-   static int hitsItem(SnakeMap &map, int dir);
-   static bool hitsGate(SnakeMap &map, int dir);
-   static bool decideStatus(SnakeMap &map);
-   static bool isGameOver(SnakeMap &map);
+    static bool hitsWall;
+    static bool hitsPoisonItem;
+    static bool hitsGrowthItem;
+    static bool hitsGate;
+    static bool gameOver;
 
-   bool gameOver;
+    static bool decideStatus(SnakeMap &map);
+    static bool isGameOver(SnakeMap &map);
 };
 
-class ItemManager
+class SnakeMap
 {
 public:
-	class Item {
-		int kind;
-		int leftTurns;
-	};
+    SnakeMap();
+    SnakeMap(WINDOW *w, int row, int col);
+    ~SnakeMap();
 
-	ItemManager(SnakeMap &s);
-	void randomItemGenerate();
-	void itemStatusChange();
+    void eraseAll();
+    void makeEdge();
 
-	int **map;
-	vector<Item> list;
+    int **map;
+    int row;
+    int col;
+};
+
+class GameManager
+{
+public:
+    GameManager(SnakeMap &m);
+    void randomItemGenerate();
+    void randomGateGenerate();
+    void itemStatusChange();
+    void gateStatusChange();
+
+    SnakeMap& map;
+    vector<Point> poisonItems;
+    vector<Point> growthItems;
+    Point gates[2];
 };
 
 using namespace EventControl;
 using namespace std;
 
+// KEY_LEFT KEY_RIGHT KEY_UP KEY_DOWN
+
 int main()
 {
-	int row, col;
+    int row, col;
 
-	initscr();
-	getmaxyx(stdscr, row, col);
-	keypad(stdscr, TRUE);
-	noecho();
+    initscr();
+    getmaxyx(stdscr, row, col);
+    keypad(stdscr, TRUE);
+    noecho();
 
-	SnakeMap m;
-	m.eraseAll();
-	m.makeEdge();
+    SnakeMap map;
+    map.eraseAll();
+    map.makeEdge();
 
-	Snake s(m);
-	s.makeSnake()
+    Snake snake(map);
+    snake.makeSnake()
 
-	ItemManager im(m);
+    GameManager game(m);
 
-	int ch, direction;
-	while (isGameOver()) {
-		ch = getch();
-		direction = s.findRoute(ch);
+    int ch, direction;
+    while (isGameOver()) {
+	key = getch();
+	direction = snake.findRoute(key);
 
-		switch (hitsItem(m, direction)) {
-			case GROWTH_ITEM:
-			    s.length++;
-				break;
-			case POISON_ITEM:
-			    s.length--;
-				break;
-		}
+	if (hitsGrowthItem)
+	    length++;
+	else if (hitsPoisonItem)
+	    length--;
 
-		if (hitsGate(m, direction))
-			s.passGate();
-		else
-			s.move(direction);
+	if (hitsGate)
+	    snake.passGate();
+	else
+	    snake.move(direction);
 
-		im.itemStatusChange();
-		im.randomItemGenerate();
+	game.itemStatusChange();
+	game.randomItemGenerate();
+	game.gateStatusChange();
+	game.randomGateGenerate();
 
-		if (s.length == 10)
-			m.makeGate();
+	if (s.length == 10)
+	    map.makeGate();
 
-		m.reflectResult();
+	refresh();
+    }
 
-		refresh();
-	}
-
-	return 0;
+    return 0;
 }
