@@ -10,6 +10,11 @@
 #define GROWTH_ITEM 5
 #define POISON_ITEM 6
 
+#define UP 0
+#define DOWN 1
+#define RIGHT 2
+#define LEFT 3
+
 class Point
 {
 public:
@@ -102,7 +107,7 @@ int main()
 
     GameManager game(m);
 
-    int ch, direction;
+    int direction;
     while (isGameOver()) {
 	key = getch();
 	direction = snake.findRoute(key);
