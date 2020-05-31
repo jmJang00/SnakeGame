@@ -35,8 +35,8 @@ public:
     SnakeMapa& m;
     int length;
     int prevKey;
-    Point head;
-    vector<Point> body;
+    Point head;   //머리
+    vector<Point> body;  //몸체 
 };
 
 #endif __SNAKE_H__
