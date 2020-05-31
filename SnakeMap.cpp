@@ -1,35 +1,49 @@
 #include "SnakeMap.h"
+#include <iostream>
+#include <ncurses.h>
 
-SnakeMap::SnakeMap() {}
+using namespace std;
 
-SnakeMap::SnakeMap(int row, int col) {
-    map = new int*[row];
+SnakeMap::SnakeMap(int row, int col): row(row), col(col) {
+    cout << this << ": SnakeMap() called";
+    mat = new int*[row];
     for (int i=0; i<row; i++) {
-       map[i] = new int[col];
+       mat[i] = new int[col];
     }
 }
 
 SnakeMap::~SnakeMap() {
+    cout << this << ": ~SnakeMap() called";
     for (int i=0; i<row; i++)
-	    delete[] map[i];
-    delete[] map;
+	    delete[] mat[i];
+    delete[] mat;
 }
 
 void SnakeMap::eraseAll() {
     for (int i=0; i<row; i++)
 	    for (int j=0; j<col; j++)
-	        map[i][j] = 0;
+	        mat[i][j] = 0;
 }
 
 void SnakeMap::makeEdge() {
-    map[0][0] = 2;
-    map[0][col-1] = 2;
-    map[row-1][0] = 2;
-    map[row-1][col-1] = 2;
+    mat[0][0] = 2;
+    mat[0][col-1] = 2;
+    mat[row-1][0] = 2;
+    mat[row-1][col-1] = 2;
     for (int i=0; i<row; i++) {
 	    for (int j=0; j<col; j++) {
 	        if ((i == 0 || i == row-1) ^ (j == 0 || j == col-1))
-		        map[i][j] = 1;
+		        mat[i][j] = 1;
+	    }
+    }
+}
+
+void SnakeMap::draw() {
+    for (int i=0; i<row; i++) {
+	    for (int j=0; j<col; j++) {
+	        attron(COLOR_PAIR(mat[i][j]));
+	        mvprintw(i, j, " ");
+	        attroff(COLOR_PAIR(mat[i][j]));
 	    }
     }
 }

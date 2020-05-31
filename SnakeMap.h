@@ -1,19 +1,41 @@
 #ifndef __SNAKE_MAP__
 #define __SNAKE_MAP__
 
+class Point
+{
+public:
+    Point(): row(0), col(0) {}
+    Point(int row, int col): row(row), col(col){}
+    Point &operator =(Point p) {
+        row = p.row;
+        col = p.col;
+    }
+    bool operator ==(Point p) {
+        return row == p.row && col == p.col;
+    }
+
+    bool operator !=(Point p) {
+        return !(*this == p);
+    }
+    int row;
+    int col;
+};
+
 class SnakeMap
 {
 public:
-    SnakeMap();
     SnakeMap(int row, int col);
     ~SnakeMap();
 
     void eraseAll();
     void makeEdge();
-
-    int **map;
-    int row;
-    int col;
+    void draw();
+    int &operator [](Point p) {
+        return mat[p.row][p.col];
+    }
+    int **mat;
+    const int row;
+    const int col;
 };
 
 #endif

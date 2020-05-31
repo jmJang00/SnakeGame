@@ -1,11 +1,11 @@
 #ifndef __SNAKE_H__
 #define __SNAKE_H__
+#include <vector>
 
 class Snake
 {
 public:
     // 생성자, 소멸자
-    Snake();
     Snake(SnakeMap &m); // SnakeMap 객체를 받아서 map 객체에 link
     ~Snake();
 
@@ -26,13 +26,13 @@ public:
      *  나아갈 방향에 사물이 존재하면 거기에 해당하는    
      *  이벤트 변수를 true로 만든다.
      */
-    void passGate(Point *& gates);
+    void passGate(Point *gates);
     /*
      *  게이트의 위치를 받고 prevKey를 고려해 게이트를 통과해서 움직이는 head를
      *  그린다.
      */
 
-    SnakeMapa& m;
+    SnakeMap& m;
     int length;
     int prevKey;
     Point head;
