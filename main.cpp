@@ -20,6 +20,7 @@ public:
     bool hitsGrowthItem;
     bool hitsGate;
     bool gameOver;
+    bool winsGame;
 
     EventControl() {
         hitsWall = false;
@@ -27,6 +28,7 @@ public:
         hitsGrowthItem = false;
         hitsGate = false;
         gameOver = false;
+        winsGame = false;
     }
     bool decideStatus(SnakeMap &map);
     bool isGameOver(SnakeMap &map) {
@@ -40,7 +42,8 @@ public:
 class GameManager
 {
 public:
-    GameManager(SnakeMap &m, Point& p): map(m), snake(p), turn(0) {    // Point& p temporary
+    GameManager(SnakeMap &m, Point& p):
+    map(m), snake(p), frame(0), seconds(0) {    // Point& p temporary
         for (int i=0; i<map.row; i++) {
             for (int j=0; j<map.col; j++) {
                 if (map.mat[i][j] == EMPTY_SPACE)
@@ -49,9 +52,13 @@ public:
                     wall.push_back(Point(i, j));
             }
         }
+        maxLengthRecord = 1;
+        growthItemRecord = 0;
+        PoisonItemRecord = 0;
+        gateUsageRecord = 0;
     }
     void randomItemGenerate() {
-        if (turn % 10 != 0)
+        if (frame % 20 != 0)
             return;
 
         Point newItem;
@@ -76,34 +83,41 @@ public:
             wall.erase(wall.begin() + idx);
         }
     }
-    void gameStatusChange() {
-        
-    }
+    void gameStatusChange() {}
 
-    Point snake;    // temporary
+    Point& snake;    // temporary
     SnakeMap& map;
     vector<Point> poisonItems;
     vector<Point> growthItems;
     vector<Point> wall;
     // vector<Point> snake;
     vector<Point> emptySpace;
-    unsigned int turn;
+    unsigned int frame;
+    double seconds;
+
+    // record
+    unsigned int maxLengthRecord;
+    unsigned int growthItemRecord;
+    unsigned int PoisonItemRecord;
+    unsigned int gateUsageRecord;
+    
     
     Point gates[2];
 };
 
-
-// KEY_LEFT KEY_RIGHT KEY_UP KEY_DOWN
+// class Mission {};
 
 int main()
 {
     int row, col;
 
+    // configure
     initscr();
     getmaxyx(stdscr, row, col);
     keypad(stdscr, TRUE);
     noecho();
     start_color();
+    nodelay(stdscr, TRUE);
     srand(time(NULL));
 
     SnakeMap map(row, col);
@@ -128,18 +142,25 @@ int main()
     // Snake snake(map);
     // snake.makeSnake();
     
-
     map.draw();
     
     EventControl event;
+
+    time_t past;
+    time_t now;
     
-    int direction, key, length = 3;
+    int direction, key = 's', length = 3;
     bool gateGenerated = false;
+    time(&now);
     while (event.isGameOver(map)) {
         key = getch();
+        if (!(key == KEY_DOWN || key == KEY_UP || key == 's' ||
+            key == KEY_LEFT || key == KEY_RIGHT || key == 'q'))
+            key = direction;
 
         // direction = snake.findRoute(key);    
         p2 = p1;
+        direction = key;
         switch (key) {
             case KEY_DOWN:
                 p1.row += 1;
@@ -152,6 +173,11 @@ int main()
                 break;
             case KEY_RIGHT:
                 p1.col += 1;
+                break;
+            case 's':
+                continue;
+            case 'q':
+                event.gameOver = true;
                 break;
         }
 
@@ -193,17 +219,20 @@ int main()
             map[p1] = SNAKE_HEAD;
         }
     
-        // game.itemStatusChange();
+        // game.gameStatusChange();
         game.randomItemGenerate();
-        // game.gateStatusChange();
-        if (length > 5 && !gateGenerated) {
+        if (length > 10 && !gateGenerated) {
             game.randomGateGenerate();
             gateGenerated = true;
         }
     
         map.draw();
         refresh();
-        game.turn++;
+        napms(100);
+        past = now;
+        time(&now);
+        game.seconds = difftime(now, past);
+        game.frame++;
     }
     
     endwin();
