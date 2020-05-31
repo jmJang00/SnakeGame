@@ -5,21 +5,8 @@
 #include <vector>
 #include <ctime>
 #include <cstdlib>
-
+#include "constant.h"
 // screen block code
-#define EMPTY_SPACE 0
-#define WALL 1
-#define IMMUNE_WALL 2
-#define SNAKE_HEAD 3
-#define SNAKE_BODY 4
-#define GROWTH_ITEM 5
-#define POISON_ITEM 6
-#define GATE 7
-
-#define UP 0
-#define DOWN 1
-#define RIGHT 2
-#define LEFT 3
 
 
 using namespace std;
@@ -35,19 +22,15 @@ public:
     bool gameOver;
 
     EventControl() {
-        cout << this << ": EventControl() called";
         hitsWall = false;
         hitsPoisonItem = false;
         hitsGrowthItem = false;
         hitsGate = false;
         gameOver = false;
     }
-    ~EventControl() {
-        cout << this << ": ~EventControl() called";
-    }
     bool decideStatus(SnakeMap &map);
     bool isGameOver(SnakeMap &map) {
-        if (EventControl::hitsWall)
+        if (hitsWall)
            return false;
         else
            return true;
@@ -58,7 +41,6 @@ class GameManager
 {
 public:
     GameManager(SnakeMap &m, Point& p): map(m), snake(p), turn(0) {    // Point& p temporary
-        cout << this << ": GameManager() called";
         for (int i=0; i<map.row; i++) {
             for (int j=0; j<map.col; j++) {
                 if (map.mat[i][j] == EMPTY_SPACE)
@@ -67,9 +49,6 @@ public:
                     wall.push_back(Point(i, j));
             }
         }
-    }
-    ~GameManager() {
-        cout << this << ": ~GameManager() called";
     }
     void randomItemGenerate() {
         if (turn % 10 != 0)
@@ -102,7 +81,7 @@ public:
     }
 
     Point snake;    // temporary
-    SnakeMap map;
+    SnakeMap& map;
     vector<Point> poisonItems;
     vector<Point> growthItems;
     vector<Point> wall;
@@ -203,6 +182,7 @@ int main()
                 }
             length--;
         }
+        
         if (event.hitsGate) {
             // snake.passGate(game.gates);
             event.hitsGate = false;

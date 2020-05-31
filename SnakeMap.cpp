@@ -1,11 +1,9 @@
 #include "SnakeMap.h"
-#include <iostream>
 #include <ncurses.h>
 
 using namespace std;
 
 SnakeMap::SnakeMap(int row, int col): row(row), col(col) {
-    cout << this << ": SnakeMap() called";
     mat = new int*[row];
     for (int i=0; i<row; i++) {
        mat[i] = new int[col];
@@ -13,7 +11,6 @@ SnakeMap::SnakeMap(int row, int col): row(row), col(col) {
 }
 
 SnakeMap::~SnakeMap() {
-    cout << this << ": ~SnakeMap() called";
     for (int i=0; i<row; i++)
 	    delete[] mat[i];
     delete[] mat;
