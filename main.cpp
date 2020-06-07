@@ -84,6 +84,7 @@ public:
         }
     }
     void gameStatusChange() {}
+    void gameScoreChange() {}
 
     Point& snake;    // temporary
     SnakeMap& map;
@@ -117,10 +118,30 @@ int main()
     keypad(stdscr, TRUE);
     noecho();
     start_color();
-    nodelay(stdscr, TRUE);
     srand(time(NULL));
 
-    SnakeMap map(row, col);
+    int mainWinR = row;
+    int mainWinC = col / 2;
+    Point mainWinLoc(0, 0);
+
+    int scoreWinR = row / 2;
+    int scoreWinC = col - mainWinC;
+    Point scoreWinLoc(0, mainWinC-1);
+
+    int missionWinR = row - scoreWinR;
+    int missionWinC = scoreWinC;
+    Point missionWinLoc(scoreWinR-1, mainWinC-1);
+
+    WINDOW* mainWindow;
+    WINDOW* scoreWindow;
+    WINDOW* missionWindow;
+    mainWindow = newwin(mainWinR, mainWinC, mainWinLoc.row, mainWinLoc.col);
+    scoreWindow = newwin(scoreWinR, scoreWinC, scoreWinLoc.row, scoreWinLoc.col);
+    missionWindow = newwin(missionWinR, missionWinC, missionWinLoc.row, missionWinLoc.col);
+    wborder(mainWindow, '|', '|', '-','-','+','+','+','+');
+    wborder(missionWindow, '|', '|', '-','-','+','+','+','+');
+    wborder(scoreWindow, '|', '|', '-','-','+','+','+','+');
+    SnakeMap map(mainWinR, mainWinC, mainWindow);
 
     map.eraseAll();
     map.makeEdge();
@@ -149,7 +170,11 @@ int main()
     time_t past;
     time_t now;
     
-    int direction, key = 's', length = 3;
+    int direction;
+    direction = getch();
+    nodelay(stdscr, TRUE);
+    
+    int key, length = 3;
     bool gateGenerated = false;
     time(&now);
     while (event.isGameOver(map)) {
@@ -227,7 +252,10 @@ int main()
         }
     
         map.draw();
-        refresh();
+        
+        wrefresh(mainWindow);
+        wrefresh(missionWindow);
+        wrefresh(scoreWindow);
         napms(100);
         past = now;
         time(&now);
