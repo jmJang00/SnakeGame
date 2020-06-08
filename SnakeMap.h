@@ -1,5 +1,6 @@
 #ifndef __SNAKE_MAP__
 #define __SNAKE_MAP__
+#include <ncurses.h>
 
 class Point
 {
@@ -24,7 +25,7 @@ public:
 class SnakeMap
 {
 public:
-    SnakeMap(int row, int col);
+    SnakeMap(int row, int col, WINDOW *scr);
     ~SnakeMap();
 
     void eraseAll();
@@ -36,6 +37,7 @@ public:
     int **mat;
     const int row;
     const int col;
+    WINDOW *mainWindow;
 };
 
 #endif

@@ -5,21 +5,8 @@
 #include <vector>
 #include <ctime>
 #include <cstdlib>
-
+#include "constant.h"
 // screen block code
-#define EMPTY_SPACE 0
-#define WALL 1
-#define IMMUNE_WALL 2
-#define SNAKE_HEAD 3
-#define SNAKE_BODY 4
-#define GROWTH_ITEM 5
-#define POISON_ITEM 6
-#define GATE 7
-
-#define UP 0
-#define DOWN 1
-#define RIGHT 2
-#define LEFT 3
 
 
 using namespace std;
@@ -33,21 +20,19 @@ public:
     bool hitsGrowthItem;
     bool hitsGate;
     bool gameOver;
+    bool winsGame;
 
     EventControl() {
-        cout << this << ": EventControl() called";
         hitsWall = false;
         hitsPoisonItem = false;
         hitsGrowthItem = false;
         hitsGate = false;
         gameOver = false;
-    }
-    ~EventControl() {
-        cout << this << ": ~EventControl() called";
+        winsGame = false;
     }
     bool decideStatus(SnakeMap &map);
     bool isGameOver(SnakeMap &map) {
-        if (EventControl::hitsWall)
+        if (hitsWall)
            return false;
         else
            return true;
@@ -57,8 +42,8 @@ public:
 class GameManager
 {
 public:
-    GameManager(SnakeMap &m, Point& p): map(m), snake(p), turn(0) {    // Point& p temporary
-        cout << this << ": GameManager() called";
+    GameManager(SnakeMap &m, Point& p):
+    map(m), snake(p), frame(0), seconds(0) {    // Point& p temporary
         for (int i=0; i<map.row; i++) {
             for (int j=0; j<map.col; j++) {
                 if (map.mat[i][j] == EMPTY_SPACE)
@@ -67,12 +52,13 @@ public:
                     wall.push_back(Point(i, j));
             }
         }
-    }
-    ~GameManager() {
-        cout << this << ": ~GameManager() called";
+        maxLengthRecord = 1;
+        growthItemRecord = 0;
+        PoisonItemRecord = 0;
+        gateUsageRecord = 0;
     }
     void randomItemGenerate() {
-        if (turn % 10 != 0)
+        if (frame % 20 != 0)
             return;
 
         Point newItem;
@@ -97,29 +83,36 @@ public:
             wall.erase(wall.begin() + idx);
         }
     }
-    void gameStatusChange() {
-        
-    }
+    void gameStatusChange() {}
+    void gameScoreChange() {}
 
-    Point snake;    // temporary
-    SnakeMap map;
+    Point& snake;    // temporary
+    SnakeMap& map;
     vector<Point> poisonItems;
     vector<Point> growthItems;
     vector<Point> wall;
     // vector<Point> snake;
     vector<Point> emptySpace;
-    unsigned int turn;
+    unsigned int frame;
+    double seconds;
+
+    // record
+    unsigned int maxLengthRecord;
+    unsigned int growthItemRecord;
+    unsigned int PoisonItemRecord;
+    unsigned int gateUsageRecord;
+    
     
     Point gates[2];
 };
 
-
-// KEY_LEFT KEY_RIGHT KEY_UP KEY_DOWN
+// class Mission {};
 
 int main()
 {
     int row, col;
 
+    // configure
     initscr();
     getmaxyx(stdscr, row, col);
     keypad(stdscr, TRUE);
@@ -127,7 +120,28 @@ int main()
     start_color();
     srand(time(NULL));
 
-    SnakeMap map(row, col);
+    int mainWinR = row;
+    int mainWinC = col / 2;
+    Point mainWinLoc(0, 0);
+
+    int scoreWinR = row / 2;
+    int scoreWinC = col - mainWinC;
+    Point scoreWinLoc(0, mainWinC-1);
+
+    int missionWinR = row - scoreWinR;
+    int missionWinC = scoreWinC;
+    Point missionWinLoc(scoreWinR-1, mainWinC-1);
+
+    WINDOW* mainWindow;
+    WINDOW* scoreWindow;
+    WINDOW* missionWindow;
+    mainWindow = newwin(mainWinR, mainWinC, mainWinLoc.row, mainWinLoc.col);
+    scoreWindow = newwin(scoreWinR, scoreWinC, scoreWinLoc.row, scoreWinLoc.col);
+    missionWindow = newwin(missionWinR, missionWinC, missionWinLoc.row, missionWinLoc.col);
+    wborder(mainWindow, '|', '|', '-','-','+','+','+','+');
+    wborder(missionWindow, '|', '|', '-','-','+','+','+','+');
+    wborder(scoreWindow, '|', '|', '-','-','+','+','+','+');
+    SnakeMap map(mainWinR, mainWinC, mainWindow);
 
     map.eraseAll();
     map.makeEdge();
@@ -148,18 +162,29 @@ int main()
      Snake snake(map);
     // snake.makeSnake();
     
-
     map.draw();
     
     EventControl event;
+
+    time_t past;
+    time_t now;
     
-    int direction, key, length = 3;
+    int direction;
+    direction = getch();
+    nodelay(stdscr, TRUE);
+    
+    int key, length = 3;
     bool gateGenerated = false;
+    time(&now);
     while (event.isGameOver(map)) {
         key = getch();
+        if (!(key == KEY_DOWN || key == KEY_UP || key == 's' ||
+            key == KEY_LEFT || key == KEY_RIGHT || key == 'q'))
+            key = direction;
 
         // direction = snake.findRoute(key);    
         p2 = p1;
+        direction = key;
         switch (key) {
             case KEY_DOWN:
                 p1.row += 1;
@@ -172,6 +197,11 @@ int main()
                 break;
             case KEY_RIGHT:
                 p1.col += 1;
+                break;
+            case 's':
+                continue;
+            case 'q':
+                event.gameOver = true;
                 break;
         }
 
@@ -202,6 +232,7 @@ int main()
                 }
             length--;
         }
+        
         if (event.hitsGate) {
             // snake.passGate(game.gates);
             event.hitsGate = false;
@@ -212,17 +243,23 @@ int main()
             map[p1] = SNAKE_HEAD;
         }
     
-        // game.itemStatusChange();
+        // game.gameStatusChange();
         game.randomItemGenerate();
-        // game.gateStatusChange();
-        if (length > 5 && !gateGenerated) {
+        if (length > 10 && !gateGenerated) {
             game.randomGateGenerate();
             gateGenerated = true;
         }
     
         map.draw();
-        refresh();
-        game.turn++;
+        
+        wrefresh(mainWindow);
+        wrefresh(missionWindow);
+        wrefresh(scoreWindow);
+        napms(100);
+        past = now;
+        time(&now);
+        game.seconds = difftime(now, past);
+        game.frame++;
     }
     
     endwin();

@@ -1,22 +1,24 @@
 #include "SnakeMap.h"
-#include <iostream>
 #include <ncurses.h>
+#include "constant.h"
 
 using namespace std;
 
-SnakeMap::SnakeMap(int row, int col): row(row), col(col) {
-    cout << this << ": SnakeMap() called";
+SnakeMap::SnakeMap(int row, int col, WINDOW *scr)
+: row(row-2), col(col-2), mainWindow(scr)
+{
     mat = new int*[row];
     for (int i=0; i<row; i++) {
        mat[i] = new int[col];
     }
+    
 }
 
 SnakeMap::~SnakeMap() {
-    cout << this << ": ~SnakeMap() called";
     for (int i=0; i<row; i++)
 	    delete[] mat[i];
     delete[] mat;
+    delwin(mainWindow);
 }
 
 void SnakeMap::eraseAll() {
@@ -41,9 +43,9 @@ void SnakeMap::makeEdge() {
 void SnakeMap::draw() {
     for (int i=0; i<row; i++) {
 	    for (int j=0; j<col; j++) {
-	        attron(COLOR_PAIR(mat[i][j]));
-	        mvprintw(i, j, " ");
-	        attroff(COLOR_PAIR(mat[i][j]));
+	        wattron(mainWindow, COLOR_PAIR(mat[i][j]));
+	        mvwprintw(mainWindow, i+1, j+1, " ");
+	        wattroff(mainWindow, COLOR_PAIR(mat[i][j]));
 	    }
     }
 }
