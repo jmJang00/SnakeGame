@@ -1,6 +1,6 @@
 #include <ncurses.h>
 #include <iostream>
-// #include "snake.h"
+#include "snake.h"
 #include "SnakeMap.h"
 #include <vector>
 #include <ctime>
@@ -134,7 +134,6 @@ int main()
 
     Point p1(5, 5), p2;
     map[p1] = SNAKE_HEAD;
-
     GameManager game(map, p1);
 
     init_pair(POISON_ITEM, COLOR_RED, COLOR_RED);
@@ -146,7 +145,7 @@ int main()
     init_pair(SNAKE_HEAD, COLOR_YELLOW, COLOR_YELLOW);
     init_pair(GATE, COLOR_MAGENTA, COLOR_MAGENTA);
 
-    // Snake snake(map);
+     Snake snake(map);
     // snake.makeSnake();
     
 
