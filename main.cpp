@@ -1,112 +1,17 @@
 #include <ncurses.h>
 #include <iostream>
-#include "snake.h"
-#include "SnakeMap.h"
+// #include "snake.h"
 #include <vector>
 #include <ctime>
 #include <cstdlib>
 #include "constant.h"
+#include "SnakeMap.h"
+#include "EventControl.h"
+#include "GameManager.h"
 // screen block code
-
 
 using namespace std;
 using std::vector;
-
-class EventControl
-{
-public:
-    bool hitsWall;
-    bool hitsPoisonItem;
-    bool hitsGrowthItem;
-    bool hitsGate;
-    bool gameOver;
-    bool winsGame;
-
-    EventControl() {
-        hitsWall = false;
-        hitsPoisonItem = false;
-        hitsGrowthItem = false;
-        hitsGate = false;
-        gameOver = false;
-        winsGame = false;
-    }
-    bool decideStatus(SnakeMap &map);
-    bool isGameOver(SnakeMap &map) {
-        if (hitsWall)
-           return false;
-        else
-           return true;
-    }
-};
-
-class GameManager
-{
-public:
-    GameManager(SnakeMap &m, Point& p):
-    map(m), snake(p), frame(0), seconds(0) {    // Point& p temporary
-        for (int i=0; i<map.row; i++) {
-            for (int j=0; j<map.col; j++) {
-                if (map.mat[i][j] == EMPTY_SPACE)
-                    emptySpace.push_back(Point(i, j));
-                else if (map.mat[i][j] == WALL)
-                    wall.push_back(Point(i, j));
-            }
-        }
-        maxLengthRecord = 1;
-        growthItemRecord = 0;
-        PoisonItemRecord = 0;
-        gateUsageRecord = 0;
-    }
-    void randomItemGenerate() {
-        if (frame % 20 != 0)
-            return;
-
-        Point newItem;
-        int idx = 0;
-
-        do {
-            idx = rand() % emptySpace.size();
-            newItem = emptySpace[idx];
-        } while(newItem == snake);
-
-        if (rand() % 2)
-            map.mat[newItem.row][newItem.col] = GROWTH_ITEM;
-        else
-            map.mat[newItem.row][newItem.col] = POISON_ITEM;
-        emptySpace.erase(emptySpace.begin() + idx);
-    }
-    void randomGateGenerate() {
-        for (int i=0; i<2; i++) {
-            int idx = rand() % wall.size();
-            gates[0] = wall[idx];
-            map[gates[0]] = GATE;
-            wall.erase(wall.begin() + idx);
-        }
-    }
-    void gameStatusChange() {}
-    void gameScoreChange() {}
-
-    Point& snake;    // temporary
-    SnakeMap& map;
-    vector<Point> poisonItems;
-    vector<Point> growthItems;
-    vector<Point> wall;
-    // vector<Point> snake;
-    vector<Point> emptySpace;
-    unsigned int frame;
-    double seconds;
-
-    // record
-    unsigned int maxLengthRecord;
-    unsigned int growthItemRecord;
-    unsigned int PoisonItemRecord;
-    unsigned int gateUsageRecord;
-    
-    
-    Point gates[2];
-};
-
-// class Mission {};
 
 int main()
 {
@@ -115,10 +20,15 @@ int main()
     // configure
     initscr();
     getmaxyx(stdscr, row, col);
-    keypad(stdscr, TRUE);
     noecho();
     start_color();
     srand(time(NULL));
+    keypad(stdscr, TRUE);
+
+    mvprintw((row-1)/2 - 1, (col-22)/2 - 1, "press any key to start");
+    refresh();
+    getch();
+    nodelay(stdscr, TRUE);
 
     int mainWinR = row;
     int mainWinC = col / 2;
@@ -126,11 +36,11 @@ int main()
 
     int scoreWinR = row / 2;
     int scoreWinC = col - mainWinC;
-    Point scoreWinLoc(0, mainWinC-1);
+    Point scoreWinLoc(0, mainWinC);
 
     int missionWinR = row - scoreWinR;
     int missionWinC = scoreWinC;
-    Point missionWinLoc(scoreWinR-1, mainWinC-1);
+    Point missionWinLoc(scoreWinR, mainWinC);
 
     WINDOW* mainWindow;
     WINDOW* scoreWindow;
@@ -143,6 +53,7 @@ int main()
     wborder(scoreWindow, '|', '|', '-','-','+','+','+','+');
     SnakeMap map(mainWinR, mainWinC, mainWindow);
 
+    
     map.eraseAll();
     map.makeEdge();
 
@@ -159,7 +70,7 @@ int main()
     init_pair(SNAKE_HEAD, COLOR_YELLOW, COLOR_YELLOW);
     init_pair(GATE, COLOR_MAGENTA, COLOR_MAGENTA);
 
-     Snake snake(map);
+    // Snake snake(map);
     // snake.makeSnake();
     
     map.draw();
@@ -169,40 +80,38 @@ int main()
     time_t past;
     time_t now;
     
-    int direction;
-    direction = getch();
-    nodelay(stdscr, TRUE);
-    
     int key, length = 3;
+    int direction = rand() % 4;
+    switch(direction) {
+        case UP: direction = KEY_UP; break;
+        case DOWN: direction = KEY_DOWN; break;
+        case RIGHT: direction = KEY_RIGHT; break;
+        case LEFT: direction = KEY_LEFT; break;
+    }
     bool gateGenerated = false;
-    time(&now);
-    while (event.isGameOver(map)) {
-        key = getch();
-        if (!(key == KEY_DOWN || key == KEY_UP || key == 's' ||
-            key == KEY_LEFT || key == KEY_RIGHT || key == 'q'))
-            key = direction;
+    time(&past);
 
-        // direction = snake.findRoute(key);    
+    while (event.isGameOver()) {
+        keypad(stdscr, true);
+        for (int i=0; i<10; i++) {
+            key = getch();
+            napms(10);
+            if (!(key == KEY_DOWN || key == KEY_UP ||
+                key == KEY_LEFT || key == KEY_RIGHT))
+                key = direction;
+            else
+                direction = key;
+        }
+        keypad(stdscr, false);
+
+        // snake.findRoute(key);
         p2 = p1;
-        direction = key;
+        
         switch (key) {
-            case KEY_DOWN:
-                p1.row += 1;
-                break;
-            case KEY_UP:
-                p1.row -= 1;
-                break;
-            case KEY_LEFT:
-                p1.col -= 1;
-                break;
-            case KEY_RIGHT:
-                p1.col += 1;
-                break;
-            case 's':
-                continue;
-            case 'q':
-                event.gameOver = true;
-                break;
+            case KEY_DOWN: p1.row += 1; break;
+            case KEY_UP: p1.row -= 1; break;
+            case KEY_LEFT: p1.col -= 1; break;
+            case KEY_RIGHT: p1.col += 1; break;
         }
 
         if (map[p1] == GROWTH_ITEM)
@@ -215,6 +124,7 @@ int main()
         if (event.hitsGrowthItem) {
             // snake.length++;
             event.hitsGrowthItem = false;
+            game.growthItemRecord++;
             for (int i=0; i<game.growthItems.size(); i++)
                 if (game.growthItems[i] == p1) {
                     game.growthItems.erase(game.growthItems.begin() + i);
@@ -225,6 +135,7 @@ int main()
         else if (event.hitsPoisonItem) {
             // snake.length--;
             event.hitsPoisonItem = false;
+            game.poisonItemRecord++;
             for (int i=0; i<game.poisonItems.size(); i++)
                 if (game.poisonItems[i] == p1) {
                     game.poisonItems.erase(game.poisonItems.begin() + i);
@@ -236,6 +147,7 @@ int main()
         if (event.hitsGate) {
             // snake.passGate(game.gates);
             event.hitsGate = false;
+            game.gateUsageRecord++;
         }
         else {
             // snake.move(direction);
@@ -251,17 +163,28 @@ int main()
         }
     
         map.draw();
+        mvwprintw(scoreWindow, 1, 1, "Score Board");
+        mvwprintw(scoreWindow, 2, 1, "B: %d/%d (current length) / (max length)", length, game.maxLengthRecord);
+        mvwprintw(scoreWindow, 3, 1, "+: %d (Growth Items count)", game.growthItemRecord);
+        mvwprintw(scoreWindow, 4, 1, "-: %d (Poison Items count)", game.poisonItemRecord);
+        mvwprintw(scoreWindow, 5, 1, "G: %d (Gate usage)", game.gateUsageRecord);
+        mvwprintw(scoreWindow, 6, 1, "time: %.2lf(s)", game.seconds);
+
+        mvwprintw(missionWindow, 1, 1, "Mission");
+        mvwprintw(missionWindow, 2, 1, "B: 10 (%c)", (game.maxLengthRecord >= 10) ? 'v' : ' ');
+        mvwprintw(missionWindow, 3, 1, "+: 5 (%c)", (game.growthItemRecord >= 5) ? 'v' : ' ');
+        mvwprintw(missionWindow, 4, 1, "-: 2 (%c)", (game.poisonItemRecord >= 2) ? 'v' : ' ');
+        mvwprintw(missionWindow, 5, 1, "G: 1 (%c)", (game.gateUsageRecord >= 1) ? 'v' : ' ');
         
+        game.maxLengthRecord = (game.maxLengthRecord < length) ? length : game.maxLengthRecord;
+
         wrefresh(mainWindow);
         wrefresh(missionWindow);
         wrefresh(scoreWindow);
-        napms(100);
-        past = now;
         time(&now);
         game.seconds = difftime(now, past);
         game.frame++;
     }
-    
     endwin();
     return 0;
 }

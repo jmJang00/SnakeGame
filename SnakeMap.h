@@ -28,6 +28,7 @@ public:
     SnakeMap(int row, int col, WINDOW *scr);
     ~SnakeMap();
 
+    void gameEnding();
     void eraseAll();
     void makeEdge();
     void draw();
