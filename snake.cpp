@@ -11,7 +11,18 @@ Snake::~Snake() {}
 
 void Snake::makeSnake()
 {
-	head(rand() % maxheight, rnnd() % maxwidth);
+	int x = rand() % maxheight;
+	int y = rnnd() % maxwidth;
+	head(x,y);
+	for (int i = 0; i < length; i++)
+	{
+		body.push_back();
+	}
+	for (int i = 0; i < length; i++)
+	{
+		body.begin() + i = head.col + (i + 1);
+	}
+
 }
 void Snake::move(int dir)
 {
@@ -37,21 +48,15 @@ void Snake::move(int dir)
 	}
 	if (direction == 3)
 	{
-		head.insert();
-		head=Snake::body.begin()
-		Snake::body.pop_back();
+		point p (head.row,head.col);
+		head.col++;
+		body.insert(body.begin, p);
 	}
 }
 int Snake::findRoute(int key) {
 	int s = key;
 	while (1)
 	{
-		if (s == 0)
-			break;
-		else if (s == 1)
-			EventControl::isGameover();
-		else if (s==4)
-			EventControl::isGameover();
 		
 
 

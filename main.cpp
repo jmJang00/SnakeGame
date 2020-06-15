@@ -159,7 +159,7 @@ int main()
     init_pair(SNAKE_HEAD, COLOR_YELLOW, COLOR_YELLOW);
     init_pair(GATE, COLOR_MAGENTA, COLOR_MAGENTA);
 
-     Snake snake(map);
+    // Snake snake(map);
     // snake.makeSnake();
     
     map.draw();

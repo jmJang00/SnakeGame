@@ -1,6 +1,7 @@
 #ifndef __SNAKE_H__
 #define __SNAKE_H__
 #include <vector>
+using namespace std;
 
 class Snake
 {
@@ -35,8 +36,8 @@ public:
     SnakeMap& m;
     int length;
     int prevKey;
-    vector<Point> head;   //머리
-    vector<Point> body[length];  //몸체 
+    Point head;   //머리
+    vector<Point> body;  //몸체 
 };
 
 #endif __SNAKE_H__
