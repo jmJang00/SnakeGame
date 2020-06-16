@@ -5,24 +5,20 @@
 class EventControl
 {
 public:
-    bool hitsWall;
     bool hitsPoisonItem;
     bool hitsGrowthItem;
     bool hitsGate;
     bool gameOver;
-    bool winsGame;
 
     EventControl() {
-        hitsWall = false;
         hitsPoisonItem = false;
         hitsGrowthItem = false;
         hitsGate = false;
         gameOver = false;
-        winsGame = false;
     }
 
     bool isGameOver() {
-        if (hitsWall || gameOver)
+        if (gameOver)
            return false;
         else
            return true;

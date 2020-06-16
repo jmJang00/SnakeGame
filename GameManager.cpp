@@ -1,7 +1,7 @@
 #include "GameManager.h"
 
-GameManager::GameManager(SnakeMap &m, Point& p):
-map(m), snake(p), frame(0), seconds(0) {    // Point& p temporary
+GameManager::GameManager(SnakeMap &m, Snake& s):
+map(m), snake(s), frame(0), seconds(0) {
     for (int i=0; i<map.row; i++) {
         for (int j=0; j<map.col; j++) {
             if (map.mat[i][j] == EMPTY_SPACE)
@@ -10,7 +10,7 @@ map(m), snake(p), frame(0), seconds(0) {    // Point& p temporary
                 wall.push_back(Point(i, j));
         }
     }
-    maxLengthRecord = 1;
+    maxLengthRecord = 3;
     growthItemRecord = 0;
     poisonItemRecord = 0;
     gateUsageRecord = 0;
@@ -31,7 +31,7 @@ void GameManager::randomItemGenerate() {
         lifespan = rand() % 20 + 30;
         newItem = emptySpace[idx];
         newItem.lifespan = lifespan;
-    } while(newItem == snake);
+    } while(snake.isSnake(newItem));
 
     if (rand() % 2) {
         map[newItem] = GROWTH_ITEM;
@@ -48,8 +48,8 @@ void GameManager::randomItemGenerate() {
 void GameManager::randomGateGenerate() {
     for (int i=0; i<2; i++) {
         int idx = rand() % wall.size();
-        gates[0] = wall[idx];
-        map[gates[0]] = GATE;
+        gates[i] = wall[idx];
+        map[gates[i]] = GATE;
         wall.erase(wall.begin() + idx);
     }
 }

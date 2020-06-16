@@ -1,9 +1,9 @@
 #include <ncurses.h>
 #include <iostream>
-// #include "snake.h"
 #include <vector>
 #include <ctime>
 #include <cstdlib>
+#include "Snake.h"
 #include "constant.h"
 #include "SnakeMap.h"
 #include "EventControl.h"
@@ -57,10 +57,12 @@ int main()
     while (true) {
         map.eraseAll();
         map.makeEdge();
+        EventControl event;
 
-        Point p1(5, 5), p2;
-        map[p1] = SNAKE_HEAD;
-        GameManager game(map, p1);
+        Snake snake(map, event);
+        int inertia = snake.makeSnake();
+
+        GameManager game(map, snake);
 
         init_pair(POISON_ITEM, COLOR_RED, COLOR_RED);
         init_pair(WALL, COLOR_BLUE, COLOR_BLUE);
@@ -68,27 +70,15 @@ int main()
         init_pair(EMPTY_SPACE, COLOR_WHITE, COLOR_WHITE);
         init_pair(GROWTH_ITEM, COLOR_GREEN, COLOR_GREEN);
         init_pair(SNAKE_BODY, COLOR_YELLOW, COLOR_YELLOW);
-        init_pair(SNAKE_HEAD, COLOR_YELLOW, COLOR_YELLOW);
+        init_pair(SNAKE_HEAD, COLOR_RED, COLOR_RED);
         init_pair(GATE, COLOR_MAGENTA, COLOR_MAGENTA);
-
-        // Snake snake(map);
-        // snake.makeSnake();
         
         map.draw();
-        
-        EventControl event;
 
         time_t past;
         time_t now;
         
-        int key, length = 3;
-        int direction = rand() % 4;
-        switch(direction) {
-            case UP: direction = KEY_UP; break;
-            case DOWN: direction = KEY_DOWN; break;
-            case RIGHT: direction = KEY_RIGHT; break;
-            case LEFT: direction = KEY_LEFT; break;
-        }
+        int key;
         bool gateGenerated = false;
         time(&past);
 
@@ -99,75 +89,62 @@ int main()
                 napms(10);
                 if (!(key == KEY_DOWN || key == KEY_UP ||
                     key == KEY_LEFT || key == KEY_RIGHT))
-                    key = direction;
+                    key = inertia;
                 else
-                    direction = key;
+                    inertia = key;
             }
             keypad(stdscr, false);
 
-            // snake.findRoute(key);
-            p2 = p1;
-            
-            switch (key) {
-                case KEY_DOWN: p1.row += 1; break;
-                case KEY_UP: p1.row -= 1; break;
-                case KEY_LEFT: p1.col -= 1; break;
-                case KEY_RIGHT: p1.col += 1; break;
-            }
+            Point next = snake.findRoute(key);
 
-            if (map[p1] == GROWTH_ITEM)
-                event.hitsGrowthItem = true;
-            else if (map[p1] == POISON_ITEM)
-                event.hitsPoisonItem = true;
-            else if (map[p1] == WALL)
-                event.hitsWall = true;
-        
+            
             if (event.hitsGrowthItem) {
-                // snake.length++;
+                snake.bodyLength++;
                 event.hitsGrowthItem = false;
                 game.growthItemRecord++;
                 for (auto it=game.growthItems.begin(); it != game.growthItems.end(); it++)
-                    if (*it == p1) {
+                    if (*it == next) {
                         game.emptySpace.push_back(*it);
                         game.growthItems.erase(it);
                         break;
                     }
-                length++;
             }
             else if (event.hitsPoisonItem) {
-                // snake.length--;
+                snake.bodyLength--;
                 event.hitsPoisonItem = false;
                 game.poisonItemRecord++;
                 for (auto it=game.poisonItems.begin(); it != game.poisonItems.end(); it++)
-                    if (*it == p1) {
+                    if (*it == next) {
                         game.emptySpace.push_back(*it);
                         game.poisonItems.erase(it);
                         break;
                     }
-                length--;
             }
             
+            if (event.gameOver || snake.bodyLength < 2) {
+                break;
+            }
+
             if (event.hitsGate) {
-                // snake.passGate(game.gates);
+                inertia = snake.passGate(game.gates, next, key);
                 event.hitsGate = false;
                 game.gateUsageRecord++;
             }
             else {
-                // snake.move(direction);
-                map[p2] = EMPTY_SPACE;
-                map[p1] = SNAKE_HEAD;
+                snake.move(next);
+                snake.prevKey = key;
             }
         
             game.itemStatusChange();
             game.randomItemGenerate();
-            if (length > 10 && !gateGenerated) {
+            if (snake.bodyLength + 1 > 4 && !gateGenerated) {
                 game.randomGateGenerate();
                 gateGenerated = true;
             }
         
             map.draw();
             mvwprintw(scoreWindow, 1, 1, "Score Board");
-            mvwprintw(scoreWindow, 2, 1, "B: %d/%d (current length) / (max length)", length, game.maxLengthRecord);
+            mvwprintw(scoreWindow, 2, 1, "B: %d/%d (current length) / (max length)", snake.bodyLength + 1, game.maxLengthRecord);
             mvwprintw(scoreWindow, 3, 1, "+: %d (Growth Items count)", game.growthItemRecord);
             mvwprintw(scoreWindow, 4, 1, "-: %d (Poison Items count)", game.poisonItemRecord);
             mvwprintw(scoreWindow, 5, 1, "G: %d (Gate usage)", game.gateUsageRecord);
@@ -179,7 +156,7 @@ int main()
             mvwprintw(missionWindow, 4, 1, "-: 2 (%c)", (game.poisonItemRecord >= 2) ? 'v' : ' ');
             mvwprintw(missionWindow, 5, 1, "G: 1 (%c)", (game.gateUsageRecord >= 1) ? 'v' : ' ');
             
-            game.maxLengthRecord = (game.maxLengthRecord < length) ? length : game.maxLengthRecord;
+            game.maxLengthRecord = (game.maxLengthRecord < snake.bodyLength + 1) ? snake.bodyLength + 1 : game.maxLengthRecord;
 
             wrefresh(mainWindow);
             wrefresh(missionWindow);

@@ -2,6 +2,7 @@
 #define _GAME_MANAGER_
 
 #include "SnakeMap.h"
+#include "Snake.h"
 #include "constant.h"
 #include <cstdlib>
 #include <vector>
@@ -11,19 +12,19 @@ using namespace std;
 class GameManager
 {
 public:
-    GameManager(SnakeMap &m, Point& p);
+    GameManager(SnakeMap &m, Snake& s);
     void randomItemGenerate();
     void randomGateGenerate();
     void itemStatusChange();
-    void gameScoreChange();
+    void gameStatusChange();
 
-    Point& snake;    // temporary
+    Snake& snake;
     SnakeMap& map;
     list<Item> poisonItems;
     list<Item> growthItems;
     vector<Point> wall;
-    // vector<Point> snake;
     vector<Point> emptySpace;
+    Point gates[2];
     unsigned int frame;
     double seconds;
 
@@ -32,8 +33,6 @@ public:
     unsigned int growthItemRecord;
     unsigned int poisonItemRecord;
     unsigned int gateUsageRecord;
-    
-    Point gates[2];
 };
 
 #endif

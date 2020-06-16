@@ -11,8 +11,8 @@
 #define GATE 7
 
 #define UP 0
-#define DOWN 1
-#define RIGHT 2
+#define RIGHT 1
+#define DOWN 2
 #define LEFT 3
 
 #endif

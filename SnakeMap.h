@@ -7,13 +7,17 @@ class Point
 public:
     Point(): row(0), col(0) {}
     Point(int row, int col): row(row), col(col) {}
+    Point(const Point& p) {
+        row = p.row;
+        col = p.col;
+    }
     virtual ~Point() {}
     Point &operator =(const Point p) {
         row = p.row;
         col = p.col;
         return *this;
     }
-    bool operator ==(const Point p) {
+    bool operator ==(const Point p) const {
         return row == p.row && col == p.col;
     }
 
@@ -30,12 +34,11 @@ public:
     int lifespan;
 
     Item(int i, Point p): lifespan(i), Point::Point(p) {}
-    Item(): lifespan(0) {}
-    Item(const Item& item) {
-        row = item.row;
-        col = item.col;
+    Item(const Item& item): Point::Point(item.row, item.col) {
         lifespan = item.lifespan;
     }
+    Item(): lifespan(0) {}
+
     Item &operator =(const Point p) {
         Point::operator=(p);
         return *this;
