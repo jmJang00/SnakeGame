@@ -5,6 +5,7 @@
 #include "constant.h"
 #include <cstdlib>
 #include <vector>
+#include <list>
 using namespace std;
 
 class GameManager
@@ -13,13 +14,13 @@ public:
     GameManager(SnakeMap &m, Point& p);
     void randomItemGenerate();
     void randomGateGenerate();
-    void gameStatusChange();
+    void itemStatusChange();
     void gameScoreChange();
 
     Point& snake;    // temporary
     SnakeMap& map;
-    vector<Point> poisonItems;
-    vector<Point> growthItems;
+    list<Item> poisonItems;
+    list<Item> growthItems;
     vector<Point> wall;
     // vector<Point> snake;
     vector<Point> emptySpace;

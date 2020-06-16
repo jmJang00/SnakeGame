@@ -1,4 +1,4 @@
-#include "snake.h"
+#include "Snake.h"
 #include <cstdlib>
 #include "SnakeMap.h"
 

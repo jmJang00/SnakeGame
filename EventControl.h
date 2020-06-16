@@ -1,6 +1,7 @@
 #ifndef _EVENT_CONTROL_
 #define _EVENT_CONTROL_
 #include "SnakeMap.h"
+
 class EventControl
 {
 public:

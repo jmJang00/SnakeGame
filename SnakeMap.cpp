@@ -1,6 +1,4 @@
 #include "SnakeMap.h"
-#include <ncurses.h>
-#include "constant.h"
 
 using namespace std;
 
@@ -24,7 +22,7 @@ SnakeMap::~SnakeMap() {
 void SnakeMap::eraseAll() {
     for (int i=0; i<row; i++)
 	    for (int j=0; j<col; j++)
-	        mat[i+1][j+1] = 0;
+	        mat[i][j] = 0;
 }
 
 void SnakeMap::makeEdge() {
@@ -41,16 +39,11 @@ void SnakeMap::makeEdge() {
 }
 
 void SnakeMap::gameEnding() {
-    mvwprintw(mainWindow, (row-2)/2, (col-19)/2, "     Game Over     \n"
-                                                 "retry: <r> end: <q>");
+    eraseAll();
+    draw();
+    mvwprintw(mainWindow, (row-2)/2+0, (col-19)/2, "     Game Over     ");
+    mvwprintw(mainWindow, (row-2)/2+1, (col-19)/2, "retry: <r> end: <q>");
     wrefresh(mainWindow);
-    nodelay(stdscr, FALSE);
-    int key;
-    while ((key = getch()) != 'r' && key != 'q') {}
-    if (key == 'r')
-        ;
-    else if (key == 'q')
-        ;
 }
 
 void SnakeMap::draw() {

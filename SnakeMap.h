@@ -6,20 +6,46 @@ class Point
 {
 public:
     Point(): row(0), col(0) {}
-    Point(int row, int col): row(row), col(col){}
-    Point &operator =(Point p) {
+    Point(int row, int col): row(row), col(col) {}
+    virtual ~Point() {}
+    Point &operator =(const Point p) {
         row = p.row;
         col = p.col;
+        return *this;
     }
-    bool operator ==(Point p) {
+    bool operator ==(const Point p) {
         return row == p.row && col == p.col;
     }
 
-    bool operator !=(Point p) {
+    bool operator !=(const Point p) {
         return !(*this == p);
     }
     int row;
     int col;
+};
+
+class Item: public Point
+{
+public:
+    int lifespan;
+
+    Item(int i, Point p): lifespan(i), Point::Point(p) {}
+    Item(): lifespan(0) {}
+    Item(const Item& item) {
+        row = item.row;
+        col = item.col;
+        lifespan = item.lifespan;
+    }
+    Item &operator =(const Point p) {
+        Point::operator=(p);
+        return *this;
+    }
+    bool operator ==(const Point p) {
+        return Point::operator==(p);
+    }
+    bool operator !=(const Point p) {
+        return !(*this == p);
+    }
 };
 
 class SnakeMap

@@ -22,18 +22,26 @@ void GameManager::randomItemGenerate() {
     if (frame % 20 != 0)
         return;
 
-    Point newItem;
+    Item newItem;
     int idx = 0;
+    int lifespan = 0;
 
     do {
         idx = rand() % emptySpace.size();
+        lifespan = rand() % 20 + 30;
         newItem = emptySpace[idx];
+        newItem.lifespan = lifespan;
     } while(newItem == snake);
 
-    if (rand() % 2)
-        map.mat[newItem.row][newItem.col] = GROWTH_ITEM;
-    else
-        map.mat[newItem.row][newItem.col] = POISON_ITEM;
+    if (rand() % 2) {
+        map[newItem] = GROWTH_ITEM;
+        growthItems.push_back(Item(newItem));
+    }
+    else {
+        newItem.lifespan = newItem.lifespan + 50;
+        map[newItem] = POISON_ITEM;
+        poisonItems.push_back(Item(newItem));
+    }
     emptySpace.erase(emptySpace.begin() + idx);
 }
 
@@ -43,5 +51,25 @@ void GameManager::randomGateGenerate() {
         gates[0] = wall[idx];
         map[gates[0]] = GATE;
         wall.erase(wall.begin() + idx);
+    }
+}
+
+
+void GameManager::itemStatusChange() {
+    for (auto it=poisonItems.begin(); it != poisonItems.end(); it++) {
+        it->lifespan--;
+        if (it->lifespan == 0) {
+            map.mat[it->row][it->col] = EMPTY_SPACE;
+            emptySpace.push_back(*it);
+            it = poisonItems.erase(it);
+        }
+    }
+    for (auto it=growthItems.begin(); it != growthItems.end(); it++) {
+        it->lifespan--;
+        if (it->lifespan == 0) {
+            map.mat[it->row][it->col] = EMPTY_SPACE;
+            emptySpace.push_back(*it);
+            it = growthItems.erase(it);
+        }
     }
 }
