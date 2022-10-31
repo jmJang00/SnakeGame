@@ -1,3 +1,3 @@
 # SnakeGame
-project of C++ programming class using ncurses library.
+project for C++ programming class using ncurses library.
 
